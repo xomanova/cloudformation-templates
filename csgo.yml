@@ -63,7 +63,7 @@ Parameters:
     MaxLength: '255'
     MinLength: '1'
     Type: String
-  rcon_password:
+  rconpassword:
     AllowedPattern: "[\\x20-\\x7E]*"
     ConstraintDescription: can contain only ASCII characters.
     Default: "vierbierbitte"
@@ -72,8 +72,8 @@ Parameters:
     MinLength: '1'
     Type: String
   MyIp:
-    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3}))"
-    ContraintDescription:  A valid IP address
+    AllowedPattern: "[\\x2E-\\x39]*"
+    ConstraintDescription:  A valid IP address
     Description: Your public ip for management
     Type: String
 Resources:
@@ -100,7 +100,7 @@ Resources:
           tar -xvzf steamcmd_linux.tar.gz
           /Steam/steamcmd.sh +login anonymous +force_install_dir /Steam/csgo-ds +app_update 740 +quit
           echo "hostname \"${servername}\"" >> /Steam/csgo-ds/csgo/cfg/server.cfg
-          echo "rcon_password \"${rcon_password}\"" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+          echo "rcon_password \"${rconpassword}\"" >> /Steam/csgo-ds/csgo/cfg/server.cfg
           echo "mp_autoteambalance 0" >> /Steam/csgo-ds/csgo/cfg/server.cfg
           echo "mp_limitteams 0" >> /Steam/csgo-ds/csgo/cfg/server.cfg
           echo "mp_randomspawn 1" >> /Steam/csgo-ds/csgo/cfg/server.cfg
