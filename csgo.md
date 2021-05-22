@@ -6,15 +6,15 @@ csgo.yml
 
 A CloudFormation template for deploying a Steam registered Counter-Strike: Global Offensive server.
 
-Deploys two custom game modes: 
-    `gamemode_knivesonly`:
-        - Players spawn without default primary or secondary weapons.
-        - Buy time is zero
-        - C4 is removed
-    `gamemode_deagleonly`:"
-        - Players spawn with default primary weapon of desert eagle.
-        - Buy time is zero
-        - C4 is removed
+Deploys two custom game modes:\
+&nbsp;&nbsp;&nbsp;&nbsp;`gamemode_knivesonly`:\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Players spawn without default primary or secondary weapons.\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Buy time is zero\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- C4 is removed\
+&nbsp;&nbsp;&nbsp;&nbsp;`gamemode_deagleonly`:\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Players spawn with default primary weapon of desert eagle.\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Buy time is zero\
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- C4 is removed\
 
 
 ### Dependencies
