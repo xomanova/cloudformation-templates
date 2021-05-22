@@ -1,0 +1,184 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CounterStrike Global Offensive linux server template
+Mappings:
+  AWSRegion2AMI:
+    eu-central-1:
+      AMI: ami-26c43149
+    eu-west-1:
+      AMI: ami-ed82e39e
+    us-east-1:
+      AMI: ami-3bdd502c
+Parameters:
+  InstanceType:
+    AllowedValues:
+    - t2.micro
+    - t2.medium
+    - c4.large
+    ConstraintDescription: must be a valid EC2 instance type.
+    Default: t2.micro
+    Description: Instance type for EC2 instance.
+    Type: String
+  KeyName:
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  Project:
+    AllowedPattern: "[\\x20-\\x7E]*"
+    ConstraintDescription: can contain only ASCII characters.
+    Default: Counter-Strike
+    Description: CounterStrike
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  HostedZone:
+    AllowedPattern: "[\\x20-\\x7E]*"
+    ConstraintDescription: can contain only ASCII characters.
+    Default: example.com.
+    Description: zone name 
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  GSLT:
+    AllowedPattern: "[\\x20-\\x7E]*"
+    ConstraintDescription: can contain only ASCII characters.
+    Default: 1111
+    Description: Game Server Login Token
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  authkey:
+    AllowedPattern: "[\\x20-\\x7E]*"
+    ConstraintDescription: can contain only ASCII characters.
+    Default: 1111
+    Description: Steam auth key
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  servername:
+    AllowedPattern: "[\\x20-\\x7E]*"
+    ConstraintDescription: can contain only ASCII characters.
+    Default: "Counter-Strike: Global Offensive"
+    Description: Name for the server on Steam
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  rcon_password:
+    AllowedPattern: "[\\x20-\\x7E]*"
+    ConstraintDescription: can contain only ASCII characters.
+    Default: "vierbierbitte"
+    Description: Remote console password for the server
+    MaxLength: '255'
+    MinLength: '1'
+    Type: String
+  MyIp:
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3}))"
+    ContraintDescription:  A valid IP address
+    Description: Your public ip for management
+    Type: String
+Resources:
+  Instance:
+    Properties:
+      ImageId: !FindInMap [ AWSRegion2AMI, !Ref "AWS::Region", AMI ]
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroups: [!Ref SecurityGroup]
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 40  # CSGO is quite big...
+      Tags:
+      - Key: Name
+        Value: !Join [ "-", [EC2-CSGO, !Ref Project] ]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -ex
+          apt-get update
+          apt-get install lib32gcc1 -y
+          mkdir /Steam && cd /Steam
+          wget https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
+          tar -xvzf steamcmd_linux.tar.gz
+          /Steam/steamcmd.sh +login anonymous +force_install_dir /Steam/csgo-ds +app_update 740 +quit
+          echo "hostname \"${servername}\"" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+          echo "rcon_password \"${rcon_password}\"" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+          echo "mp_autoteambalance 0" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+          echo "mp_limitteams 0" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+          echo "mp_randomspawn 1" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+          echo "bot_quota 0" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+          echo "mp_solid_teammates 1" >> /Steam/csgo-ds/csgo/cfg/server.cfg
+                  
+          echo "mp_buytime 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_freezetime 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "game_type 3" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "game_mode 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_randomspawn 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_respawn_on_death_t 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_respawn_on_death_ct 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_ct_default_primary \"\"" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_t_default_primary \"\"" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_ct_default_secondary \"\"" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_t_default_secondary \"\"" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_give_player_c4 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_dm_bonus_length_max 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_dm_bonus_length_min 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_dm_time_between_bonus_max 9999" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          echo "mp_dm_time_between_bonus_min 9999" >> /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          sudo chmod +x /Steam/csgo-ds/csgo/cfg/gamemode_knivesonly.cfg
+          
+          echo "mp_buytime 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_freezetime 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "game_type 3" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "game_mode 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_randomspawn 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_respawn_on_death_t 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_respawn_on_death_ct 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_ct_default_primary weapon_deagle" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_t_default_primary weapon_deagle" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_ct_default_secondary \"\"" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_t_default_secondary \"\"" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_give_player_c4 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_dm_bonus_length_max 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_dm_bonus_length_min 0" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_dm_time_between_bonus_max 9999" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          echo "mp_dm_time_between_bonus_min 9999" >> /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+          sudo chmod +x /Steam/csgo-ds/csgo/cfg/gamemode_deagleonly.cfg
+
+          /Steam/csgo-ds/srcds_run -game csgo -console -usercon -authkey ${authkey} +game_type 1 +game_mode 2 +map de_dust2 +sv_setsteamaccount ${GSLT}
+    Type: AWS::EC2::Instance
+  SecurityGroup:
+    Properties:
+      GroupDescription: 'Enable access to the instance. '
+      SecurityGroupIngress:
+      - CidrIp: !Sub '${MyIp}/32'
+        FromPort: '22'
+        IpProtocol: tcp
+        ToPort: '22'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '27015'
+        IpProtocol: tcp
+        ToPort: '27015'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '26900'
+        IpProtocol: udp
+        ToPort: '27030'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '27000'
+        IpProtocol: udp
+        ToPort: '27030'
+      - CidrIp: 0.0.0.0/0
+        FromPort: '4380'
+        IpProtocol: udp
+        ToPort: '4380'
+      Tags:
+      - Key: Name
+        Value: !Join [ "-", [SG-CSGO, !Ref Project] ]
+    Type: AWS::EC2::SecurityGroup
+  MyDNS:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref HostedZone
+      Comment: CNAME for the server
+      Name: !Join [ ".", [cs, !Ref HostedZone] ]
+      Type: CNAME
+      TTL: 300
+      ResourceRecords: [ !GetAtt Instance.PublicDnsName ]
