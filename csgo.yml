@@ -12,11 +12,10 @@ Mappings:
 Parameters:
   InstanceType:
     AllowedValues:
-    - t2.micro
-    - t2.medium
-    - c4.large
+    - t3.medium
+    - c5.large
     ConstraintDescription: must be a valid EC2 instance type.
-    Default: t2.micro
+    Default: t3.medium
     Description: Instance type for EC2 instance.
     Type: String
   KeyName:
