@@ -13,7 +13,7 @@ Parameters:
   InstanceType:
     AllowedValues:
     - t3.medium
-    - c5.large
+    - c4.large
     ConstraintDescription: must be a valid EC2 instance type.
     Default: t3.medium
     Description: Instance type for EC2 instance.
